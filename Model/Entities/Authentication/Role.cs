@@ -2,20 +2,16 @@
 
 [Table("ROLES")]
 public class Role {
-    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("ROLE_ID")]
-    public int Id { get; set; }
-
-    [Required] 
-    [Column("IDENTIFIER")] 
+    [BsonId(IdGenerator = typeof(ObjectIdGenerator)), BsonRepresentation(BsonType.ObjectId)]
+    public ObjectId Id { get; set; }
+    
+    [BsonElement("Identifier")]
+    // UNIQUE
     public string Identifier { get; set; } = null!;
-
-
-    [Column("DESCRIPTION")] 
+    
+    [BsonIgnoreIfNull]
+    [BsonElement("Description")]
     public string? Description { get; set; }
-
-    public List<RoleClaim> RoleClaims { get; set; } = new();
-
-    [NotMapped] 
-    public IEnumerable<User> Users => RoleClaims.Select(rc => rc.User);
+    
+    // Insert Default Data
 }

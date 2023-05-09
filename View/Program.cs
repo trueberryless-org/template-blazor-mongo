@@ -1,15 +1,3 @@
-using Domain.Repositories.Implementations;
-using Domain.Repositories.Interfaces;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.EntityFrameworkCore;
-using Model.Entities;
-using MudBlazor;
-using MudBlazor.Services;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using View.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthenticationCore();
@@ -22,12 +10,12 @@ builder.Services.AddServerSideBlazor();
 // this adds services we need
 builder.Services.AddOptions();
 
-builder.Services.AddDbContextFactory<ModelDbContext>(
-    options => options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 27))
-    )
-);
+builder.Services.AddScoped<IMongoDbConnectionService>(x=> 
+    new MongoDbConnectionService(
+        builder.Configuration.GetConnectionString("mongoDb"),
+        builder.Configuration.GetValue<string>("Databases:mongoDb"),
+        x.GetRequiredService<ILogger<MongoDbConnectionService>>()
+    ));
 
 // MudBlazor
 builder.Services.AddMudServices(config =>
@@ -45,7 +33,6 @@ builder.Services.AddMudServices(config =>
 
 // Repositories
 builder.Services.AddScoped<ILogEntryRepository, LogEntryRepository>();
-builder.Services.AddScoped<IRoleClaimRepository, RoleClaimRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
@@ -80,12 +67,9 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<ModelDbContext>();
-
-    if (context.Database.GetPendingMigrations().Any())
-    {
-        context.Database.Migrate();
-    }
+    var context = services.GetRequiredService<IMongoDbConnectionService>();
+    
+    // Ensure Database Created
 }
 
 app.UseHttpsRedirection();

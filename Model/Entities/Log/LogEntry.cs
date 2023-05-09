@@ -5,27 +5,22 @@ namespace Model.Entities.Log;
 [Table("LOG_ENTRIES")]
 public class LogEntry
 {
-    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("LOG_ID")]
-    public int Id { get; set; }
+    [BsonId(IdGenerator = typeof(ObjectIdGenerator)), BsonRepresentation(BsonType.ObjectId)]
+    public ObjectId Id { get; set; }
     
-    [Required]
-    [Column("USER_ID")]
-    public int UserId { get; set; }
-    
-    public User User { get; set; }
-    
-    [Required]
-    [Column("FIELD_TYPE")]
+    [BsonRequired]
+    [BsonRepresentation(BsonType.String)]
+    [BsonElement("FieldType")]
     public ELogEntryType FieldType { get; set; }
     
-    [Required]
-    [Column("CHANGE_DATE")] 
-    public DateOnly DateValue { get; set; }
+    [BsonRequired]
+    [BsonDateTimeOptions(DateOnly = true)]
+    [BsonElement("DateValue")]
+    public DateTime DateValue { get; set; }
     
-    [Column("OLD_VALUE")]
+    [BsonElement("OldValue")]
     public string OldValue { get; set; }
     
-    [Column("NEW_VALUE")]
+    [BsonElement("NewValue")]
     public string NewValue { get; set; }
 }

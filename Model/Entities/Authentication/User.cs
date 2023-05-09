@@ -1,34 +1,48 @@
-﻿namespace Model.Entities.Authentication;
+﻿using Model.Entities.Log;
+
+namespace Model.Entities.Authentication;
 
 [Table("USERS")]
 public class User {
-    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Column("USER_ID")]
-    public int Id { get; set; }
+    [BsonId(IdGenerator = typeof(ObjectIdGenerator)), BsonRepresentation(BsonType.ObjectId)]
+    public ObjectId Id { get; set; }
 
-    [Required]
-    [Column("USERNAME")]
+    [BsonRequired]
+    [BsonElement("Username")]
     public string Username { get; set; } = null!;
 
-    [Required]
-    [DataType(DataType.EmailAddress)]
-    [Column("EMAIL")]
+    [BsonRequired]
+    [BsonElement("Email")]
+    // UNIQUE
     public string Email { get; set; } = null!;
 
+    public bool ShouldSerializeAge()
+    {
+        var client = new MongoClient("mongodb://root:toor@localhost:27017/?authMechanism=DEFAULT");
+        var database = client.GetDatabase("db");
+        var collection = database.GetCollection<User>("User");
+        
+        /*var cmdStr = "{ createIndexes: 'User', indexes: [ { key: { Email: 1 }, name: 'email-uniq-1', unique: true } ] }";
+        var cmd = BsonDocument.Parse(cmdStr);
+        var result = database.RunCommand<BsonDocument>(cmd);*/
 
-    [Required]
-    [DataType(DataType.Text)]
-    [Column("PASSWORD_HASH")]
+        return collection.CountDocuments(u => u.Email == Email) > 0;
+    }
+
+    [BsonRequired]
+    [BsonElement("PasswordHash")]
     public string PasswordHash { get; set; } = null!;
 
-    [Required]
-    [NotMapped]
+    [BsonIgnore]
     public string LoginPassword { get; set; } = null!;
     
-    public List<RoleClaim> RoleClaims { get; set; }
-
-    [NotMapped] 
-    public IEnumerable<string> PlainRoles => RoleClaims.Select(x => x.Role.Identifier);
+    [BsonRepresentation(BsonType.Array)]
+    [BsonElement("Roles")]
+    public List<Role> Roles { get; set; }
+    
+    [BsonRepresentation(BsonType.Array)]
+    [BsonElement("LogEntries")]
+    public List<LogEntry> LogEntries { get; set; }
     
     public User ClearSensitiveData() {
         // PasswordHash = null!;

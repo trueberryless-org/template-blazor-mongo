@@ -1,14 +1,20 @@
-﻿namespace Domain.Repositories.Interfaces;
+﻿
 
-public interface IRepository<TEntity> where TEntity : class {
-    Task<TEntity?> ReadAsync(int id, CancellationToken ct = default);
-    Task<List<TEntity>> ReadAsync(Expression<Func<TEntity, bool>> filter, CancellationToken ct = default);
-    Task<List<TEntity>> ReadAsync(CancellationToken ct = default);
-    Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct = default);
-    Task<List<TEntity>> CreateAsync(List<TEntity> entity, CancellationToken ct = default);
-    Task UpdateAsync(TEntity entity, CancellationToken ct = default);
-    Task UpdateAsync(IEnumerable<TEntity> entity, CancellationToken ct = default);
-    Task DeleteAsync(TEntity entity, CancellationToken ct = default);
-    Task DeleteAsync(IEnumerable<TEntity> entity, CancellationToken ct = default);
-    Task DeleteAsync(Expression<Func<TEntity, bool>> filter, CancellationToken ct = default);
+namespace Domain.Repositories.Interfaces;
+
+public interface IRepository<TRootObject> where TRootObject : class {
+
+    Task CreateAsync(TRootObject obj, CancellationToken ct);
+    Task CreateRangeAsync(List<TRootObject> objs, CancellationToken ct);
+   
+    Task<TRootObject?> ReadAsync(ObjectId id, CancellationToken ct);
+    Task<List<TRootObject>> ReadAsync(int start, int count, CancellationToken ct);
+    Task<List<TRootObject>> ReadAsync(Expression<Func<TRootObject, bool>> filter, CancellationToken ct);
+    Task<List<TRootObject>> ReadAllAsync(CancellationToken ct);
+
+    Task UpdateAsync(ObjectId id, TRootObject obj, CancellationToken ct);
+
+    Task DeleteAsync(ObjectId id, TRootObject obj, CancellationToken ct);
+   
+    Task DeleteRangeAsync(Expression<Func<TRootObject, bool>> filter, CancellationToken ct);
 }
